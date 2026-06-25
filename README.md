@@ -91,6 +91,24 @@ python examples/client.py
 OpenAPI documentation is available at
 `http://127.0.0.1:8000/docs`.
 
+## Documentation site
+
+The Sphinx documentation is built from `docs/` and published with GitHub
+Pages at:
+
+https://roysrc.github.io/EdgeFleet/
+
+The Pages workflow is defined in `.github/workflows/docs-pages.yml`. It builds
+the docs on pull requests and deploys them on pushes to `main` or manual
+workflow runs.
+
+Build the docs locally with:
+
+```bash
+pip install -e '.[docs]'
+sphinx-build -E -b html -W --keep-going docs docs/_build/html
+```
+
 ## Public Python API
 
 ```python
