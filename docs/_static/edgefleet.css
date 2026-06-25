@@ -1,0 +1,21 @@
+:root {
+  --edgefleet-accent: #2c7a7b;
+}
+
+a {
+  text-decoration-thickness: 0.08em;
+}
+
+.sidebar-brand-text {
+  font-weight: 700;
+}
+
+.admonition.safety {
+  border-color: #c2410c;
+}
+
+table.docutils td,
+table.docutils th {
+  vertical-align: top;
+}
+

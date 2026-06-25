@@ -1,0 +1,86 @@
+services:
+  orchestrator:
+    build: .
+    command: ["orchestrator", "--host", "0.0.0.0", "--port", "8000"]
+    environment:
+      EDGEFLEET_TOKEN: ${EDGEFLEET_TOKEN:-development-secret}
+      EDGEFLEET_EDGE_TOKEN: ${EDGEFLEET_EDGE_TOKEN:-edge-secret}
+      EDGEFLEET_STATE_FILE: /data/orchestrator.json
+    ports:
+      - "8000:8000"
+    volumes:
+      - edgefleet-data:/data
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "python",
+          "-c",
+          "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health')",
+        ]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  edge-agent:
+    build: .
+    command:
+      [
+        "agent",
+        "--factory",
+        "examples.edge_agent:create_agent",
+        "--host",
+        "0.0.0.0",
+        "--port",
+        "8100",
+      ]
+    environment:
+      EDGEFLEET_AGENT_ENDPOINT: http://edge-agent:8100
+      EDGEFLEET_ORCHESTRATOR_URL: http://orchestrator:8000
+      EDGEFLEET_LLM_URL: http://ollama:11434/v1
+      EDGEFLEET_MODEL: qwen3:1.7b
+      EDGEFLEET_TOKEN: ${EDGEFLEET_TOKEN:-development-secret}
+      EDGEFLEET_EDGE_TOKEN: ${EDGEFLEET_EDGE_TOKEN:-edge-secret}
+      EDGEFLEET_AGENT_STATE: /data/edge-agent.json
+    ports:
+      - "8100:8100"
+    volumes:
+      - edgefleet-data:/data
+    depends_on:
+      orchestrator:
+        condition: service_healthy
+      ollama-model:
+        condition: service_completed_successfully
+
+  ollama:
+    image: ollama/ollama:latest
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama-data:/root/.ollama
+    healthcheck:
+      test: ["CMD", "ollama", "list"]
+      interval: 5s
+      timeout: 3s
+      retries: 30
+
+  ollama-model:
+    image: ollama/ollama:latest
+    environment:
+      OLLAMA_HOST: http://ollama:11434
+    entrypoint: ["ollama"]
+    command: ["pull", "qwen3:1.7b"]
+    depends_on:
+      ollama:
+        condition: service_healthy
+
+  nats:
+    image: nats:2-alpine
+    command: ["-js"]
+    ports:
+      - "4222:4222"
+      - "8222:8222"
+
+volumes:
+  ollama-data:
+  edgefleet-data:

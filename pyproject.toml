@@ -1,0 +1,62 @@
+[build-system]
+requires = ["hatchling>=1.27"]
+build-backend = "hatchling.build"
+
+[project]
+name = "edgefleet"
+dynamic = ["version"]
+description = "Local-LLM orchestration for edge agents and embodied devices"
+readme = "README.md"
+requires-python = ">=3.11"
+license = { text = "Apache-2.0" }
+authors = [{ name = "EdgeFleet contributors" }]
+dependencies = [
+  "fastapi>=0.115,<1",
+  "httpx>=0.27,<1",
+  "jsonschema>=4.23,<5",
+  "pydantic>=2.9,<3",
+  "uvicorn[standard]>=0.32,<1",
+]
+
+[project.optional-dependencies]
+a2a = ["a2a-sdk[fastapi]>=1.1,<2"]
+langgraph = ["langgraph>=0.6,<2"]
+mcp = ["mcp>=1.27,<2"]
+nats = ["nats-py>=2.10,<3"]
+docs = [
+  "furo>=2024.8.6",
+  "sphinx>=8.1,<9",
+  "sphinx-autodoc-typehints>=3.1,<4",
+  "sphinx-copybutton>=0.5.2,<1",
+]
+test = [
+  "pytest>=8.3,<10",
+  "pytest-asyncio>=0.24,<2",
+]
+all = [
+  "a2a-sdk[fastapi]>=1.1,<2",
+  "furo>=2024.8.6",
+  "langgraph>=0.6,<2",
+  "mcp>=1.27,<2",
+  "nats-py>=2.10,<3",
+  "sphinx>=8.1,<9",
+  "sphinx-autodoc-typehints>=3.1,<4",
+  "sphinx-copybutton>=0.5.2,<1",
+]
+
+[project.scripts]
+edgefleet = "edgefleet.cli:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/edgefleet"]
+
+[tool.hatch.version]
+path = "src/edgefleet/version.py"
+pattern = '^VERSION = "(?P<version>[^"]+)"$'
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]
+filterwarnings = [
+  "ignore:label\\(\\) is deprecated:DeprecationWarning:a2a\\.utils\\.proto_utils",
+]
